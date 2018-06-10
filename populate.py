@@ -5,7 +5,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE',
 import django
 django.setup()
 
-from v2ex.models import Category,Topic,Tag
+from v2ex.models import Category,Topic,Tag, UserProfile,User
 # import requests
 # import json
 # from time import sleep
@@ -40,37 +40,49 @@ def populate_t():
             t.save()
     return 'Done'
 
-# def populate_post():
-#     '''填充帖子'''
-#     url = "https://www.v2ex.com/api/topics/latest.json"
-#     r = requests.get(url).text
-#     datas = json.loads(r)
-#     for data in datas:
-#         title = data['title']
-#         content = data['content_rendered']
-#         node_name = data['node']['title']
-#         node = Node.query.filter_by(name=node_name).first()
-#         if node:
-#             p = Post(title=title,content=content,node=node,author=random.choice(User.query.all()))
-#             db.session.add(p)
-#             db.session.commit()
-#     return 'Done'
+def populate_post():
+    '''填充帖子'''
+    import requests
+    import json
+    url = "https://www.v2ex.com/api/topics/latest.json"
+    r = requests.get(url).text
+    datas = json.loads(r)
+    for data in datas:
+        title = data['title']
+        body = data['content_rendered']
+        node_name = data['node']['title']
+        try:
+            tag = Tag.objects.get(name=node_name)
+            if tag:
+                try:
+                    t = Topic(title=title,body=body,tag=tag,author=random.choice(User.objects.all()))
+                    t.save()
+                except:
+                    pass
+        except:
+            pass
+    return 'Done'
 #
-# def populate_users(num=20):
-#     '''填充用户'''
-#     for i in range(num):
-#         url = 'https://randomuser.me/api/'
-#         r = requests.get(url).text
-#         data = json.loads(r)
-#         username = data['results'][0]['login']['username']
-#         password = data['results'][0]['login']['password']
-#         email = data['results'][0]['email']
-#         avatar = data['results'][0]['picture']['large']
-#         user = User(username=username,password=password,email=email,avatar=avatar)
-#         db.session.add(user)
-#         db.session.commit()
-#         sleep(2)
-#     return 'Done'
+def populate_users(num=20):
+    '''填充用户'''
+    from random import seed
+    import forgery_py
+    import hashlib
+    seed()
+    for i in range(num):
+        user = User(username=forgery_py.internet.user_name(True),
+                    password=forgery_py.lorem_ipsum.word(),
+                    email=forgery_py.internet.email_address())
+        user.save()
+        user.set_password(user.password)
+        user.save()
+        avater_hash = hashlib.md5(user.email.encode('utf-8')).hexdigest()
+        up = UserProfile(avatar_hash=avater_hash,
+                         user=user)
+        up.save()
+
 
 if __name__ == '__main__':
-    populate_t()
+    # populate_t()
+    # populate_users()
+    populate_post()

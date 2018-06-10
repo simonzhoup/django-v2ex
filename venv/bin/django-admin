@@ -1,4 +1,4 @@
-#!/home/simon/PycharmProjects/v2exproject/venv/bin/python
+#!/home/simon/PycharmProjects/django-v2ex/venv/bin/python
 
 # -*- coding: utf-8 -*-
 import re

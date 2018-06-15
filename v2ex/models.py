@@ -35,8 +35,9 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     avatar_hash = models.CharField(max_length=100)
 
-    def avatar(self, size=100, default='identicon', rating='g'):
+    def avatar(self, size=100, default='monsterid', rating='g'):
         url = 'http://www.gravatar.com/avatar'
+        hash = self.avatar_hash
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
             url=url, hash=hash, size=size, default=default, rating=rating)
 

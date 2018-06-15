@@ -1,7 +1,10 @@
-from django.shortcuts import render
+import hashlib
+from django.shortcuts import render, redirect
 from v2ex.models import Category, Tag, Topic, UserProfile
 
 from v2ex.forms import UserForm
+from django import forms
+from django.contrib.auth.models import User
 
 def index(request):
     categorys = Category.objects.all()
@@ -23,16 +26,15 @@ def index(request):
     return response
 
 def register(request):
-    registered = False
     form = UserForm()
     if request.method == 'POST':
         form = UserForm(data=request.POST)
         if form.is_valid():
-            user = form.save()
+            user = User(username=form.data.get('username'), email=form.data.get('email'), password=form.data.get('password'))
             user.set_password(user.password)
             user.save()
             up = UserProfile(user=user, avatar_hash=hashlib.md5(user.email.encode('utf-8')).hexdigest())
             up.save()
-            registered = True
-
+        return redirect('index')
     return render(request, 'user/user_register.html', {'form':form})
+

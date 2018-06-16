@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from v2ex.models import UserProfile
+from django.contrib.auth import authenticate, login, logout
 
 
 
@@ -23,3 +24,25 @@ class UserForm(forms.Form):
         if User.objects.all().filter(email=email):
             raise forms.ValidationError('此邮箱已注册')
         return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.all().filter(username=username):
+            raise forms.ValidationError('用户名已存在')
+        return username
+
+class LoginForm(forms.Form):
+    username = forms.CharField(label='用户名', max_length=20, required=True)
+    password = forms.CharField(label='密码', widget=forms.PasswordInput(), required=True)
+
+    def clean(self):
+        cleaned_data = super(LoginForm, self).clean()
+        username = cleaned_data.get('username')
+        password = cleaned_data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            raise forms.ValidationError('用户名/密码错误')
+
+
+
